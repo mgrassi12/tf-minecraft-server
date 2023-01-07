@@ -40,6 +40,6 @@
 - Play.
 - Irrecoverably shut everything down with `terraform destroy`.
 
-For troubleshooting - to SSH to the EC2 instance, use `ssh -i ~/.ssh/id_rsa ubuntu@ip_of_instance_goes_here`
+For troubleshooting or changing server properties (like difficulty), SSH to the EC2 instance using `ssh -i ~/.ssh/id_rsa ubuntu@ip_of_instance_goes_here`
 
 ## Cloned from [here](https://github.com/HarryNash/terraform-minecraft)

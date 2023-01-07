@@ -23,12 +23,19 @@ resource "aws_security_group" "minecraft_server_security_group" {
   ingress {
     description = "Receive Minecraft (Bedrock Edition) traffic from everywhere."
     from_port   = 19132
-    to_port     = 19132
+    to_port     = 19133
     protocol    = "tcp"
     cidr_blocks = var.player_whitelist
   }
+  ingress {
+    description = "Receive Minecraft (Bedrock Edition) traffic from everywhere."
+    from_port   = 19132
+    to_port     = 19133
+    protocol    = "udp"
+    cidr_blocks = var.player_whitelist
+  }
   egress {
-    description = "Send everywhere."
+    description = "Send to everywhere."
     from_port   = 0
     to_port     = 0
     protocol    = "-1"
@@ -85,3 +92,4 @@ resource "aws_instance" "minecraft" {
 # TODO: r53 records for using a fqdn
 # TODO: save state in s3 bucket
 # TODO: auto deploy on push using github actions
+# TODO: add customization of server.properties through tfvars
