@@ -92,7 +92,7 @@ resource "aws_spot_instance_request" "minecraft_server_spot_instance" {
     EOF
 }
 
-# Create snapshots of the instance's storage
+# Create snapshots of the instance's storage on a schedule
 resource "aws_iam_role" "minecraft_dlm_lifecycle_role" {
   name = "minecraft_dlm_lifecycle_role"
 
@@ -213,13 +213,3 @@ resource "aws_cloudwatch_metric_alarm" "minecraft_uptime_alarm" {
     InstanceId = aws_spot_instance_request.minecraft_server_spot_instance.id
   }
 }
-
-# TODO: r53 records for using a fqdn
-# TODO: save state in s3 bucket
-# TODO: auto deploy on push using github actions
-# TODO: add customization of server.properties through tfvars
-# TODO: add something that automatically stops ec2 instance after x amount of hours being on
-# TODO: add notification service when server goes up and down
-# TODO: fix up readme to give more credit to OG creator and clarify this is for bedrock not java
-# TODO: add a dp
-# TODO: format
