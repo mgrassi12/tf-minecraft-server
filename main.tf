@@ -152,7 +152,7 @@ resource "aws_dlm_lifecycle_policy" "minecraft_dlm_lifecycle_policy" {
 
   policy_details {
     resource_types = ["INSTANCE"]
-    resource_locations = "CLOUD"
+    resource_locations = ["CLOUD"]
     policy_type = "EBS_SNAPSHOT_MANAGEMENT"
     target_tags = {
       Name = var.application_name
@@ -164,7 +164,7 @@ resource "aws_dlm_lifecycle_policy" "minecraft_dlm_lifecycle_policy" {
       create_rule {
         interval      = 12
         interval_unit = "HOURS"
-        times         = ["00:00","12:00"]
+        times         = ["23:45"]
       }
 
       retain_rule {
@@ -177,6 +177,40 @@ resource "aws_dlm_lifecycle_policy" "minecraft_dlm_lifecycle_policy" {
 
       copy_tags = true
     }
+  }
+}
+
+# Alarms to stop the instance if it has been on/idling for too long
+resource "aws_cloudwatch_metric_alarm" "minecraft_low_cpu_util_alarm" {
+  alarm_name = "minecraft_low_cpu_util_stop_alarm"
+  comparison_operator = "LessThanOrEqualToThreshold"
+  evaluation_periods = "1"
+  metric_name = "CPUUtilization"
+  namespace = "AWS/EC2"
+  period = "3600"
+  statistic = "Maximum"
+  threshold = "2"
+  actions_enabled = true
+  alarm_actions = ["arn:aws:automate:${var.your_region}:ec2:stop"]
+  dimensions = {
+    InstanceId = aws_spot_instance_request.minecraft_server_spot_instance.id
+  }
+  alarm_description = "Stop instance when maximum CPU usage is less than 2% for an hour"
+}
+
+resource "aws_cloudwatch_metric_alarm" "minecraft_uptime_alarm" {
+  alarm_name          = "minecraft_uptime_stop_alarm"
+  comparison_operator = "GreaterThanThreshold"
+  evaluation_periods  = "1"
+  metric_name         = "Uptime"
+  namespace           = "AWS/EC2"
+  period              = "3600"
+  statistic           = "Average"
+  threshold           = "259200"
+  actions_enabled     = true
+  alarm_actions = ["arn:aws:automate:${var.your_region}:ec2:stop"]
+  dimensions          = {
+    InstanceId = aws_spot_instance_request.minecraft_server_spot_instance.id
   }
 }
 
