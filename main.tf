@@ -1,6 +1,14 @@
 provider "aws" {
   profile = "default"
   region  = var.your_region
+  default_tags {
+    tags = {
+      Environment = "Production"
+      Name = "minecraft-server"
+      Repo = "https://github.com/mgrassi12/tf-minecraft-server"
+      ManagedBy = "Terraform"
+    }
+  }
 }
 
 # Build the security group to be used by the instance
@@ -72,7 +80,6 @@ resource "aws_instance" "minecraft" {
     EOF
 }
 
-# TODO: change the instance size to something more appropriate like a t3.medium or m5.large and make this a variable
 # TODO: change to spot instancing to reduce cost, also make this a variable
 # TODO: do backups to save state in case instance is terminated
 # TODO: join to my r53 for DNS
