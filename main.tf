@@ -57,6 +57,7 @@ data "aws_ami" "ubuntu_server_20_04_lts" {
   }
 }
 
+# Build the instance to be used as the MC Bedrock Edition server itself
 resource "aws_instance" "minecraft" {
   ami                         = data.aws_ami.ubuntu_server_20_04_lts.id
   instance_type               = var.instance_type
@@ -80,9 +81,7 @@ resource "aws_instance" "minecraft" {
     EOF
 }
 
-# TODO: change to spot instancing to reduce cost, also make this a variable
-# TODO: do backups to save state in case instance is terminated
-# TODO: join to my r53 for DNS
-# TODO: add a dynamic name so one can deploy many mc servers
+# TODO: change to spot instancing to reduce cost + do backups to keep game state across terminations
+# TODO: r53 records for using a fqdn
 # TODO: save state in s3 bucket
 # TODO: auto deploy on push using github actions
