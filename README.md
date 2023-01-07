@@ -42,4 +42,4 @@
 
 For troubleshooting - to SSH to the EC2 instance, use `ssh -i ~/.ssh/id_rsa ubuntu@ip_of_instance_goes_here`
 
-## Forked from [here](https://github.com/HarryNash/terraform-minecraft)
+## Cloned from [here](https://github.com/HarryNash/terraform-minecraft)

@@ -26,9 +26,6 @@ resource "aws_security_group" "minecraft_server_security_group" {
     protocol    = "-1"
     cidr_blocks = ["0.0.0.0/0"]
   }
-  tags = {
-    Name = "Minecraft"
-  }
 }
 
 # For SSHing to the instance
@@ -54,7 +51,7 @@ data "aws_ami" "ubuntu_server_20_04_lts" {
 
 resource "aws_instance" "minecraft" {
   ami                         = data.aws_ami.ubuntu_server_20_04_lts.id
-  instance_type               = "t3.small"
+  instance_type               = var.instance_type
   vpc_security_group_ids      = [aws_security_group.minecraft_server_security_group.id]
   associate_public_ip_address = true
   key_name                    = aws_key_pair.home.key_name
@@ -73,14 +70,8 @@ resource "aws_instance" "minecraft" {
     chmod +rwx bedrock_server
     ./bedrock_server
     EOF
-  tags = {
-    Name = "minecraft-server"
-  }
 }
 
-# TODO: change from java to bedrock edition
-# TODO: ensure resource definitions are still current
-# TODO: update tags (set a unique tag to track cost e.g. "project" = "minecraftServer" and "managedBy" = "Terraform")
 # TODO: change the instance size to something more appropriate like a t3.medium or m5.large and make this a variable
 # TODO: change to spot instancing to reduce cost, also make this a variable
 # TODO: do backups to save state in case instance is terminated
