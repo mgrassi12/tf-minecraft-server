@@ -42,4 +42,4 @@
 
 For troubleshooting or changing server properties (like difficulty), SSH to the EC2 instance using `ssh -i ~/.ssh/id_rsa ubuntu@ip_of_instance_goes_here`
 
-## Cloned from [here](https://github.com/HarryNash/terraform-minecraft)
+## Cloned from [here](https://github.com/HarryNash/terraform-minecraft) and combined with info from [here](https://gist.github.com/johntelforduk/8128dadc05ac5d14b6d835ce772dc3dc)

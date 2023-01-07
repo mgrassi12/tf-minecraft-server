@@ -3,9 +3,19 @@ variable "your_region" {
   description = "Where you want your server to be. The options are here https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/Concepts.RegionsAndAvailabilityZones.html."
 }
 
+variable "application_name" {
+  type        = string
+  description = "Name used in tags."
+}
+
 variable "instance_type" {
   type        = string
-  description = "Type of EC2 instance to run the Minecraft server. T3.medium is advisable."
+  description = "Type of EC2 instance to run the Minecraft server. T3.medium as a minimum is advisable."
+}
+
+variable "spot_price" {
+  type        = string
+  description = "Spot price for instance type."
 }
 
 variable "your_ip" {

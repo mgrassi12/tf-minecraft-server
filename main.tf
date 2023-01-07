@@ -4,7 +4,7 @@ provider "aws" {
   default_tags {
     tags = {
       Environment = "Production"
-      Name = "minecraft-server"
+      Name = var.application_name
       Repo = "https://github.com/mgrassi12/tf-minecraft-server"
       ManagedBy = "Terraform"
     }
@@ -65,7 +65,11 @@ data "aws_ami" "ubuntu_server_20_04_lts" {
 }
 
 # Build the instance to be used as the MC Bedrock Edition server itself
-resource "aws_instance" "minecraft" {
+resource "aws_spot_instance_request" "minecraft_server_spot_instance" {
+  spot_price = var.spot_price
+  wait_for_fulfillment = "true"
+  spot_type = "persistent"
+  instance_interruption_behavior = "stop"
   ami                         = data.aws_ami.ubuntu_server_20_04_lts.id
   instance_type               = var.instance_type
   vpc_security_group_ids      = [aws_security_group.minecraft_server_security_group.id]
@@ -88,8 +92,100 @@ resource "aws_instance" "minecraft" {
     EOF
 }
 
-# TODO: change to spot instancing to reduce cost + do backups to keep game state across terminations
+# Create snapshots of the instance's storage
+resource "aws_iam_role" "minecraft_dlm_lifecycle_role" {
+  name = "minecraft_dlm_lifecycle_role"
+
+  assume_role_policy = <<EOF
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Action": "sts:AssumeRole",
+      "Principal": {
+        "Service": "dlm.amazonaws.com"
+      },
+      "Effect": "Allow",
+      "Sid": ""
+    }
+  ]
+}
+EOF
+}
+
+resource "aws_iam_role_policy" "minecraft_dlm_lifecycle" {
+  name = "minecraft_dlm_lifecycle"
+  role = aws_iam_role.minecraft_dlm_lifecycle_role.id
+
+  policy = <<EOF
+{
+   "Version": "2012-10-17",
+   "Statement": [
+      {
+         "Effect": "Allow",
+         "Action": [
+            "ec2:CreateSnapshot",
+            "ec2:CreateSnapshots",
+            "ec2:DeleteSnapshot",
+            "ec2:DescribeInstances",
+            "ec2:DescribeVolumes",
+            "ec2:DescribeSnapshots"
+         ],
+         "Resource": "*"
+      },
+      {
+         "Effect": "Allow",
+         "Action": [
+            "ec2:CreateTags"
+         ],
+         "Resource": "arn:aws:ec2:*::snapshot/*"
+      }
+   ]
+}
+EOF
+}
+
+resource "aws_dlm_lifecycle_policy" "minecraft_dlm_lifecycle_policy" {
+  description        = "DLM lifecycle policy for Minecraft server spot instance"
+  execution_role_arn = aws_iam_role.minecraft_dlm_lifecycle_role.arn
+  state              = "ENABLED"
+
+  policy_details {
+    resource_types = ["INSTANCE"]
+    resource_locations = "CLOUD"
+    policy_type = "EBS_SNAPSHOT_MANAGEMENT"
+    target_tags = {
+      Name = var.application_name
+    }
+
+    schedule {
+      name = "2 weeks of bidaily snapshots"
+
+      create_rule {
+        interval      = 12
+        interval_unit = "HOURS"
+        times         = ["00:00","12:00"]
+      }
+
+      retain_rule {
+        count = 14
+      }
+
+      tags_to_add = {
+        SnapshotCreator = "DLM"
+      }
+
+      copy_tags = true
+    }
+  }
+}
+
 # TODO: r53 records for using a fqdn
 # TODO: save state in s3 bucket
 # TODO: auto deploy on push using github actions
 # TODO: add customization of server.properties through tfvars
+# TODO: add something that automatically stops ec2 instance after x amount of hours being on
+# TODO: add notification service when server goes up and down
+# TODO: fix up readme to give more credit to OG creator and clarify this is for bedrock not java
+# TODO: add a dp
+# TODO: format
