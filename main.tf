@@ -193,7 +193,7 @@ resource "aws_cloudwatch_metric_alarm" "minecraft_low_cpu_util_alarm" {
   actions_enabled     = true
   alarm_actions       = ["arn:aws:automate:${var.your_region}:ec2:stop"]
   dimensions = {
-    InstanceId = aws_spot_instance_request.minecraft_server_spot_instance.id
+    InstanceId = aws_spot_instance_request.minecraft_server_spot_instance.spot_instance_id
   }
   alarm_description = "Stop instance when maximum CPU usage is less than 2% for an hour"
 }
@@ -210,6 +210,6 @@ resource "aws_cloudwatch_metric_alarm" "minecraft_uptime_alarm" {
   actions_enabled     = true
   alarm_actions       = ["arn:aws:automate:${var.your_region}:ec2:stop"]
   dimensions = {
-    InstanceId = aws_spot_instance_request.minecraft_server_spot_instance.id
+    InstanceId = aws_spot_instance_request.minecraft_server_spot_instance.spot_instance_id
   }
 }
