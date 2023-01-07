@@ -21,17 +21,17 @@ variable "spot_price" {
 variable "your_ip" {
   type        = string
   description = "Only this IP will be able to administer the server. Find it here https://www.whatsmyip.org/."
-  sensitive = true
+  sensitive   = true
 }
 
 variable "player_whitelist" {
-  type        = list
+  type        = list(any)
   description = "Only these IPs will be able to connect and play on the server."
-  sensitive = true
+  sensitive   = true
 }
 
 variable "your_public_key" {
   type        = string
   description = "This will be in ~/.ssh/id_rsa.pub by default."
-  sensitive = true
+  sensitive   = true
 }

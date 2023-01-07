@@ -4,9 +4,9 @@ provider "aws" {
   default_tags {
     tags = {
       Environment = "Production"
-      Name = var.application_name
-      Repo = "https://github.com/mgrassi12/tf-minecraft-server"
-      ManagedBy = "Terraform"
+      Name        = var.application_name
+      Repo        = "https://github.com/mgrassi12/tf-minecraft-server"
+      ManagedBy   = "Terraform"
     }
   }
 }
@@ -66,16 +66,16 @@ data "aws_ami" "ubuntu_server_20_04_lts" {
 
 # Build the instance to be used as the MC Bedrock Edition server itself
 resource "aws_spot_instance_request" "minecraft_server_spot_instance" {
-  spot_price = var.spot_price
-  wait_for_fulfillment = "true"
-  spot_type = "persistent"
+  spot_price                     = var.spot_price
+  wait_for_fulfillment           = "true"
+  spot_type                      = "persistent"
   instance_interruption_behavior = "stop"
-  ami                         = data.aws_ami.ubuntu_server_20_04_lts.id
-  instance_type               = var.instance_type
-  vpc_security_group_ids      = [aws_security_group.minecraft_server_security_group.id]
-  associate_public_ip_address = true
-  key_name                    = aws_key_pair.home.key_name
-  user_data                   = <<-EOF
+  ami                            = data.aws_ami.ubuntu_server_20_04_lts.id
+  instance_type                  = var.instance_type
+  vpc_security_group_ids         = [aws_security_group.minecraft_server_security_group.id]
+  associate_public_ip_address    = true
+  key_name                       = aws_key_pair.home.key_name
+  user_data                      = <<-EOF
     #!/bin/bash
     sudo apt-get update --yes
     sudo snap install aws-cli --classic --accept-classic
@@ -151,9 +151,9 @@ resource "aws_dlm_lifecycle_policy" "minecraft_dlm_lifecycle_policy" {
   state              = "ENABLED"
 
   policy_details {
-    resource_types = ["INSTANCE"]
+    resource_types     = ["INSTANCE"]
     resource_locations = ["CLOUD"]
-    policy_type = "EBS_SNAPSHOT_MANAGEMENT"
+    policy_type        = "EBS_SNAPSHOT_MANAGEMENT"
     target_tags = {
       Name = var.application_name
     }
@@ -182,16 +182,16 @@ resource "aws_dlm_lifecycle_policy" "minecraft_dlm_lifecycle_policy" {
 
 # Alarms to stop the instance if it has been on/idling for too long
 resource "aws_cloudwatch_metric_alarm" "minecraft_low_cpu_util_alarm" {
-  alarm_name = "minecraft_low_cpu_util_stop_alarm"
+  alarm_name          = "minecraft_low_cpu_util_stop_alarm"
   comparison_operator = "LessThanOrEqualToThreshold"
-  evaluation_periods = "1"
-  metric_name = "CPUUtilization"
-  namespace = "AWS/EC2"
-  period = "3600"
-  statistic = "Maximum"
-  threshold = "2"
-  actions_enabled = true
-  alarm_actions = ["arn:aws:automate:${var.your_region}:ec2:stop"]
+  evaluation_periods  = "1"
+  metric_name         = "CPUUtilization"
+  namespace           = "AWS/EC2"
+  period              = "3600"
+  statistic           = "Maximum"
+  threshold           = "2"
+  actions_enabled     = true
+  alarm_actions       = ["arn:aws:automate:${var.your_region}:ec2:stop"]
   dimensions = {
     InstanceId = aws_spot_instance_request.minecraft_server_spot_instance.id
   }
@@ -208,8 +208,8 @@ resource "aws_cloudwatch_metric_alarm" "minecraft_uptime_alarm" {
   statistic           = "Average"
   threshold           = "259200"
   actions_enabled     = true
-  alarm_actions = ["arn:aws:automate:${var.your_region}:ec2:stop"]
-  dimensions          = {
+  alarm_actions       = ["arn:aws:automate:${var.your_region}:ec2:stop"]
+  dimensions = {
     InstanceId = aws_spot_instance_request.minecraft_server_spot_instance.id
   }
 }
