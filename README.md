@@ -39,3 +39,5 @@
 - Wait a minute for the server to spin up.
 - Play.
 - Irrecoverably shut everything down with `terraform destroy`.
+
+## Forked from https://github.com/HarryNash/terraform-minecraft
