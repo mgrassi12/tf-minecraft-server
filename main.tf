@@ -3,20 +3,21 @@ provider "aws" {
   region  = var.your_region
 }
 
-resource "aws_security_group" "minecraft" {
+# Build the security group to be used by the instance
+resource "aws_security_group" "minecraft_server_security_group" {
   ingress {
     description = "Receive SSH from home."
     from_port   = 22
     to_port     = 22
     protocol    = "tcp"
-    cidr_blocks = ["${var.your_ip}/32"]
+    cidr_blocks = ["${var.your_ip}"]
   }
   ingress {
-    description = "Receive Minecraft from everywhere."
-    from_port   = 25565
-    to_port     = 25565
+    description = "Receive Minecraft (Bedrock Edition) traffic from everywhere."
+    from_port   = 19132
+    to_port     = 19132
     protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
+    cidr_blocks = var.player_whitelist
   }
   egress {
     description = "Send everywhere."
@@ -30,29 +31,60 @@ resource "aws_security_group" "minecraft" {
   }
 }
 
+# For SSHing to the instance
 resource "aws_key_pair" "home" {
   key_name   = "Home"
   public_key = var.your_public_key
 }
 
+# Find an Ubuntu Server 20.04 LTS image
+data "aws_ami" "ubuntu_server_20_04_lts" {
+  most_recent = true
+
+  filter {
+    name   = "name"
+    values = ["ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-*"]
+  }
+
+  filter {
+    name   = "virtualization-type"
+    values = ["hvm"]
+  }
+}
+
 resource "aws_instance" "minecraft" {
-  ami                         = "ami-0fdbd8587b1cf431e"
-  instance_type               = "t2.small"
-  vpc_security_group_ids      = [aws_security_group.minecraft.id]
+  ami                         = data.aws_ami.ubuntu_server_20_04_lts.id
+  instance_type               = "t3.small"
+  vpc_security_group_ids      = [aws_security_group.minecraft_server_security_group.id]
   associate_public_ip_address = true
   key_name                    = aws_key_pair.home.key_name
   user_data                   = <<-EOF
     #!/bin/bash
-    sudo yum -y update
-    sudo rpm --import https://yum.corretto.aws/corretto.key
-    sudo curl -L -o /etc/yum.repos.d/corretto.repo https://yum.corretto.aws/corretto.repo
-    sudo yum install -y java-17-amazon-corretto-devel.x86_64
-    wget -O server.jar ${var.mojang_server_url}
-    java -Xmx1024M -Xms1024M -jar server.jar nogui
-    sed -i 's/eula=false/eula=true/' eula.txt
-    java -Xmx1024M -Xms1024M -jar server.jar nogui
+    sudo apt-get update --yes
+    sudo snap install aws-cli --classic --accept-classic
+    sudo apt -y install unzip
+    mkdir minecraft
+    cd minecraft
+    wget -O server_files.zip https://minecraft.azureedge.net/bin-linux/bedrock-server-1.19.51.01.zip
+    unzip server_files.zip
+    rm server_files.zip
+    LD_LIBRARY_PATH=.
+    export LD_LIBRARY_PATH
+    chmod +rwx bedrock_server
+    ./bedrock_server
     EOF
   tags = {
-    Name = "Minecraft"
+    Name = "minecraft-server"
   }
 }
+
+# TODO: change from java to bedrock edition
+# TODO: ensure resource definitions are still current
+# TODO: update tags (set a unique tag to track cost e.g. "project" = "minecraftServer" and "managedBy" = "Terraform")
+# TODO: change the instance size to something more appropriate like a t3.medium or m5.large and make this a variable
+# TODO: change to spot instancing to reduce cost, also make this a variable
+# TODO: do backups to save state in case instance is terminated
+# TODO: join to my r53 for DNS
+# TODO: add a dynamic name so one can deploy many mc servers
+# TODO: save state in s3 bucket
+# TODO: auto deploy on push using github actions

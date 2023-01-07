@@ -40,4 +40,6 @@
 - Play.
 - Irrecoverably shut everything down with `terraform destroy`.
 
-## Forked from https://github.com/HarryNash/terraform-minecraft
+For troubleshooting - to SSH to the EC2 instance, use `ssh -i ~/.ssh/id_rsa ubuntu@ip_of_instance_goes_here`
+
+## Forked from [here](https://github.com/HarryNash/terraform-minecraft)

@@ -8,12 +8,12 @@ variable "your_ip" {
   description = "Only this IP will be able to administer the server. Find it here https://www.whatsmyip.org/."
 }
 
+variable "player_whitelist" {
+  type        = list
+  description = "Only these IPs will be able to connect and play on the server."
+}
+
 variable "your_public_key" {
   type        = string
   description = "This will be in ~/.ssh/id_rsa.pub by default."
-}
-
-variable "mojang_server_url" {
-  type        = string
-  description = "Copy the server download link from here https://www.minecraft.net/en-us/download/server/."
 }
