@@ -65,11 +65,7 @@ data "aws_ami" "ubuntu_server_20_04_lts" {
 }
 
 # Build the instance to be used as the MC Bedrock Edition server itself
-resource "aws_spot_instance_request" "minecraft_server_spot_instance" {
-  spot_price                     = var.spot_price
-  wait_for_fulfillment           = "true"
-  spot_type                      = "persistent"
-  instance_interruption_behavior = "stop"
+resource "aws_instance" "minecraft_server_instance" {
   ami                            = data.aws_ami.ubuntu_server_20_04_lts.id
   instance_type                  = var.instance_type
   vpc_security_group_ids         = [aws_security_group.minecraft_server_security_group.id]
@@ -159,16 +155,16 @@ resource "aws_dlm_lifecycle_policy" "minecraft_dlm_lifecycle_policy" {
     }
 
     schedule {
-      name = "2 weeks of bidaily snapshots"
+      name = "daily snapshots retained for a week"
 
       create_rule {
-        interval      = 12
+        interval      = 24
         interval_unit = "HOURS"
         times         = ["23:45"]
       }
 
       retain_rule {
-        count = 14
+        count = 7
       }
 
       tags_to_add = {
@@ -193,7 +189,7 @@ resource "aws_cloudwatch_metric_alarm" "minecraft_low_cpu_util_alarm" {
   actions_enabled     = true
   alarm_actions       = ["arn:aws:automate:${var.your_region}:ec2:stop"]
   dimensions = {
-    InstanceId = aws_spot_instance_request.minecraft_server_spot_instance.spot_instance_id
+    InstanceId = aws_instance.minecraft_server_instance.id
   }
   alarm_description = "Stop instance when maximum CPU usage is less than 2% for an hour"
 }
@@ -210,6 +206,6 @@ resource "aws_cloudwatch_metric_alarm" "minecraft_uptime_alarm" {
   actions_enabled     = true
   alarm_actions       = ["arn:aws:automate:${var.your_region}:ec2:stop"]
   dimensions = {
-    InstanceId = aws_spot_instance_request.minecraft_server_spot_instance.spot_instance_id
+    InstanceId = aws_instance.minecraft_server_instance.id
   }
 }

@@ -13,11 +13,6 @@ variable "instance_type" {
   description = "Type of EC2 instance to run the Minecraft server. T3.medium as a minimum is advisable."
 }
 
-variable "spot_price" {
-  type        = string
-  description = "Spot price for instance type."
-}
-
 variable "your_ip" {
   type        = string
   description = "Only this IP will be able to administer the server. Find it here https://www.whatsmyip.org/."

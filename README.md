@@ -24,7 +24,7 @@
 For troubleshooting or changing server properties (like game difficulty), SSH to the EC2 instance using `ssh -i ~/.ssh/id_rsa ubuntu@ip_of_instance_goes_here`
 
 ## Acknowledgements
-This project deploys a Bedrock Edition server. It was originally cloned from this [Java Edition server project](https://github.com/HarryNash/terraform-minecraft) and combined with info from [here](https://gist.github.com/johntelforduk/8128dadc05ac5d14b6d835ce772dc3dc). I have used a spot instance in lieu of an on-demand instance and have used alarms to shut down idling instances for cost reduction purposes. This is a work-in-progress.
+This project deploys a Bedrock Edition server. It was originally cloned from this [Java Edition server project](https://github.com/HarryNash/terraform-minecraft) and combined with info from [here](https://gist.github.com/johntelforduk/8128dadc05ac5d14b6d835ce772dc3dc). I have also used alarms to automatically shut down the instance if it has been up/idling for some time. This is a work-in-progress.
 
 ## To-Do List
 - Static ip + r53 records for using a fqdn
