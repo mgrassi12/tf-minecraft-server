@@ -21,14 +21,14 @@ resource "aws_security_group" "minecraft_server_security_group" {
     cidr_blocks = ["${var.your_ip}"]
   }
   ingress {
-    description = "Receive Minecraft (Bedrock Edition) traffic from everywhere."
+    description = "Receive Minecraft (Bedrock Edition) traffic from whitelisted players."
     from_port   = 19132
     to_port     = 19133
     protocol    = "tcp"
     cidr_blocks = var.player_whitelist
   }
   ingress {
-    description = "Receive Minecraft (Bedrock Edition) traffic from everywhere."
+    description = "Receive Minecraft (Bedrock Edition) traffic from whitelisted players."
     from_port   = 19132
     to_port     = 19133
     protocol    = "udp"
@@ -176,24 +176,7 @@ resource "aws_dlm_lifecycle_policy" "minecraft_dlm_lifecycle_policy" {
   }
 }
 
-# Alarms to stop the instance if it has been on/idling for too long
-resource "aws_cloudwatch_metric_alarm" "minecraft_low_cpu_util_alarm" {
-  alarm_name          = "minecraft_low_cpu_util_stop_alarm"
-  comparison_operator = "LessThanOrEqualToThreshold"
-  evaluation_periods  = "1"
-  metric_name         = "CPUUtilization"
-  namespace           = "AWS/EC2"
-  period              = "3600"
-  statistic           = "Maximum"
-  threshold           = "2"
-  actions_enabled     = true
-  alarm_actions       = ["arn:aws:automate:${var.your_region}:ec2:stop"]
-  dimensions = {
-    InstanceId = aws_instance.minecraft_server_instance.id
-  }
-  alarm_description = "Stop instance when maximum CPU usage is less than 2% for an hour"
-}
-
+# Alarms to stop the instance if it has been on for too long
 resource "aws_cloudwatch_metric_alarm" "minecraft_uptime_alarm" {
   alarm_name          = "minecraft_uptime_stop_alarm"
   comparison_operator = "GreaterThanThreshold"
@@ -202,7 +185,7 @@ resource "aws_cloudwatch_metric_alarm" "minecraft_uptime_alarm" {
   namespace           = "AWS/EC2"
   period              = "3600"
   statistic           = "Average"
-  threshold           = "259200"
+  threshold           = "43200"
   actions_enabled     = true
   alarm_actions       = ["arn:aws:automate:${var.your_region}:ec2:stop"]
   dimensions = {
